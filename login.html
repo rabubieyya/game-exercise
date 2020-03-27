@@ -1,0 +1,75 @@
+<html>
+<head>
+<title>Login Page</title>
+</head>
+<body>
+<!-- <form name="loginForm" method="post" action="return check()>
+<table width="20%" bgcolor="0099CC" align="center">
+
+<tr>
+<td colspan=2><center><font size=4><b>HTML Login Page</b></font></center></td>
+</tr>
+
+<tr>
+<td>Username:</td>
+<td><input type="text" size=25 name="userid"></td>
+</tr>
+
+<tr>
+<td>Password:</td>
+<td><input type="Password" size=25 name="pwd"></td>
+</tr>
+
+<tr>
+<td ><input type="Reset"></td>
+<td><input type="submit" onclick="return check(this.form)" value="Login"></td>
+</tr>
+
+</table>
+</form> -->
+
+<form name="loginPage" onsubmit="return loginInfo()" >
+    Username: <input type="text" size=25 id="1" name="userid"/>
+    Age: <input type="Password" size=25 id="2" name="pwd"/>
+    <input type="submit" name="Submit" value="Login"/>
+  </form>
+
+<script language="javascript">
+function loginInfo()
+{
+    event.preventDefault();
+    var username = document.getElementById("1").value;
+    var password = document.getElementById("2").value;
+    var loginInformation = { "username":username, "password":password};
+    var loginInformationJSON = JSON.stringify(loginInformation);
+    // alert(loginInformationJSON);
+
+    fetch("http://localhost:8080/loginInformation", { 
+        
+        // Adding method type 
+        method: "POST", 
+        
+        // Adding body or contents to send s
+        body: loginInformationJSON, 
+        
+        // Adding headers to the request 
+        headers: { 
+            "Content-type": "application/json; charset=UTF-8"
+        } 
+    }) 
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(json) {
+        // console.log(json.message);
+        if(json.message === 'Success') {
+            window.location.href = "index.html";
+            console.log("DONE");
+        }
+    });
+}
+
+</script>
+
+</body>
+</html>

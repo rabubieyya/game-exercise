@@ -1,0 +1,26 @@
+{
+  "name": "game-exercise",
+  "version": "0.0.1",
+  "description": "A simple html and js game.",
+  "main": "index.html",
+  "scripts": {
+    "start": "login.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "game",
+    "html",
+    "js"
+  ],
+  "author": "ay",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "client-sessions": "^0.8.0",
+    "cookie-parser": "^1.4.5",
+    "express": "^4.17.1",
+    "express-session": "^1.17.0",
+    "mongodb": "^3.5.5",
+    "mongoose": "^5.9.6"
+  }
+}
