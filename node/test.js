@@ -84,7 +84,7 @@ app.post('/loginInformation', function(req, res){
 
 
 app.post('/scoreInformation', function(req, res){  
-  console.log(" before BYEEEEEEEEEEEEEEEEEEEEEEEEEEE");
+  console.log(" BEFORE BYEEEEEEEEEEEEEEEEEEEEEEEEEEE");
   console.log(JSON.stringify(req.session));
   console.log("BYEEEEEEEEEEEEEEEEEEEEEEEEEEE");
   console.log(req.body);
