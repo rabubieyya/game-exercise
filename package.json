@@ -4,7 +4,7 @@
   "description": "A simple html and js game.",
   "main": "index.html",
   "scripts": {
-    "start": "login.html",
+    "start": "node node/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

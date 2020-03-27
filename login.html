@@ -35,40 +35,28 @@
   </form>
 
 <script language="javascript">
-function loginInfo()
-{
-    event.preventDefault();
-    var username = document.getElementById("1").value;
-    var password = document.getElementById("2").value;
-    var loginInformation = { "username":username, "password":password};
-    var loginInformationJSON = JSON.stringify(loginInformation);
-    // alert(loginInformationJSON);
+    function loginInfo() {
+        event.preventDefault();
+        var username = document.getElementById("1").value;
+        var password = document.getElementById("2").value;
+        var loginCredentials = JSON.stringify({ "username":username, "password":password});
 
-    fetch("http://localhost:8080/loginInformation", { 
-        
-        // Adding method type 
-        method: "POST", 
-        
-        // Adding body or contents to send s
-        body: loginInformationJSON, 
-        
-        // Adding headers to the request 
-        headers: { 
-            "Content-type": "application/json; charset=UTF-8"
-        } 
-    }) 
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function(json) {
-        // console.log(json.message);
-        if(json.message === 'Success') {
-            window.location.href = "index.html";
-            console.log("DONE");
-        }
-    });
-}
-
+        fetch("http://localhost:8080/loginInformation", { 
+            method: "POST", 
+            body: loginCredentials, 
+            headers: { 
+                "Content-type": "application/json; charset=UTF-8"
+            } 
+        }) 
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(result) {
+            if(result.message === 'Success') {
+                window.location.href = "index";
+            }
+        });
+    }
 </script>
 
 </body>
