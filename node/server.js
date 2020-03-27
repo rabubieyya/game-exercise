@@ -84,30 +84,70 @@ app.post('/loginInformation', function(req, res){
 });
 
 
-app.post('/scoreInformation', function(req, res){  
+app.post('/scoreInformation', function(req, res) {
   console.log("--------------------Storing Score------------------------------");
   var gameScore = req.body.score;
-  console.log("Highscore from game is "+gameScore);
-  await MongoClient.connect(url, {useUnifiedTopology: true}, function (err, client) {
+  MongoClient.connect(url, {useUnifiedTopology: true}, async function (err, client) {
     var db = client.db('loginData');
     var query = {name: req.session.username};
 
     console.log("UserName for this session is " + req.session.username);
 
-    db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
-      if (findErr) throw findErr;
-      console.log("Highscore from db is "+result[0].highscore);
-      if(gameScore>result[0].highscore) {
-        console.log("Entering if");
-        var newHighScore = { $set: {highscore: gameScore} };
-        db.collection('loginRecords').updateOne(query, newHighScore, function(err, res) {
-          if (err) throw err;
-          console.log("HighScore Updated!");
-          // db.close();
+    var databaseJob = () => { 
+      return new Promise((resolve, reject) => {
+        db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
+          if (findErr) reject(findErr);
+          if (gameScore > result[0].highscore ) {
+            var newHighScore = { $set: {highscore: gameScore} };
+            db.collection('loginRecords').updateOne(query, newHighScore, function(err, res) {
+              if (err) reject(err);
+              console.log("HighScore Updated!");
+              resolve(res);
+            });
+          }
+
         });
-      }
-      client.close();
-    });
+      });
+    };
+
+    
+    var dateJob = () => { 
+      console.log("--------------------Checking Date------------------------------");
+      return new Promise((resolve, reject) => {
+        var currentDate = (new Date()).toISOString().split('T')[0];
+        db.collection('loginRecords').find( query, { 'games.date': currentDate } ).toArray(function(findErr, result) { 
+          if (findErr) reject(findErr);
+          if(result[0].games[0].date) {
+            console.log("date is already there, now check length of array");
+          }
+          var scoresLength = result[0].games[0].scores.length;
+          var scoreToAppend = { $push: {  result[0].games[0].scores: gameScore } }
+          if(scoresLength<10) {
+            db.collection('loginRecords').updateOne(query, scoreToAppend, function(err, res) {
+              if (err) reject(err);
+              console.log("Scores Updated!");
+              resolve(res);
+            });
+          }
+
+          // if (gameScore > result[0].highscore ) {
+          //   var newHighScore = { $set: {highscore: gameScore} };
+          //   db.collection('loginRecords').updateOne(query, newHighScore, function(err, res) {
+          //     if (err) reject(err);
+          //     console.log("HighScore Updated!");
+          //     resolve(res);
+          //   });
+          // }
+        });
+      });
+    };
+
+    var result = await databaseJob();
+    console.log(result);
+    var dateRes = await dateJob();
+    console.log("--------------------");
+    console.log(dateRes);
+    client.close();
   }); 
 
   res.json({ message: 'Success' });
