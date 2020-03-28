@@ -169,23 +169,6 @@ app.post('/scoreInformation', function(req, res) {
       });
     };
 
-    app.get('/displayUserInfo',function(req, res){ 
-      var username = req.session.username;
-      var dataToSend = {};
-      var currentDate = new Date().toISOString().split('T')[0];
-      var query = {name: req.session.username, 'games.date': currentDate};
-      MongoClient.connect(url, {useUnifiedTopology: true}, function (err, client) {
-        var db = client.db('loginData');
-        db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
-          if (findErr) reject(findErr);
-          var highscore = result[0].highscore;
-          var scoreLength = result[0].games[0].scores.length;
-          dataToSend = { "username": username, "highscore": highscore, "scoreLength": scoreLength }
-          client.close();
-        });
-      });
-      res.json(dataToSend);
-    })
 
     var scoreRes = await highScoreJob();
     var dateRes = await dateJob();
@@ -195,3 +178,21 @@ app.post('/scoreInformation', function(req, res) {
     else { res.json({ message: 'Failed' }); }
   }); 
 });
+
+app.get('/displayUserInfo',function(req, res){ 
+  var username = req.session.username;
+  var dataToSend = {};
+  var currentDate = new Date().toISOString().split('T')[0];
+  var query = {name: req.session.username, 'games.date': currentDate};
+  MongoClient.connect(url, {useUnifiedTopology: true}, function (err, client) {
+    var db = client.db('loginData');
+    db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
+      if (findErr) reject(findErr);
+      var highscore = result[0].highscore;
+      var scoreLength = result[0].games[0].scores.length;
+      dataToSend = { "username": username, "highscore": highscore, "scoreLength": scoreLength }
+      client.close();
+    });
+  });
+  res.json(dataToSend);
+})

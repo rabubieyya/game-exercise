@@ -200,7 +200,7 @@ function displayUserInfo() {
     return response.json();
   })
   .then(function(result) {
-    console.log(response.json());
+    console.log(result);
     username = result.username;
     highscore = result.highscore;
   })
