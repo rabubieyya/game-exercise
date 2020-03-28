@@ -181,7 +181,7 @@ app.post('/scoreInformation', function(req, res) {
 
 app.get('/displayUserInfo',function(req, res){ 
   var username = req.session.username;
-  var dataToSend = {};
+  dataToSend = {};
   var currentDate = new Date().toISOString().split('T')[0];
   var query = {name: req.session.username, 'games.date': currentDate};
   MongoClient.connect(url, {useUnifiedTopology: true}, function (err, client) {
@@ -194,5 +194,6 @@ app.get('/displayUserInfo',function(req, res){
       client.close();
     });
   });
+  console.log("dataToSend is "+JSON.stringify(dataToSend));
   res.json(dataToSend);
 })
