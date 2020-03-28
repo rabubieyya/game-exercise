@@ -2,6 +2,9 @@ var myGameArea;
 var myGamePiece;
 var myObstacles = [];
 var myscore;
+var startFlag = true;
+var username = "";
+var highscore = "";
 
 function restartGame() {
   document.getElementById("myfilter").style.display = "none";
@@ -13,7 +16,7 @@ function restartGame() {
   myObstacles = [];
   myscore = {};
   document.getElementById("canvascontainer").innerHTML = "";
-  startGame()
+  fetchUserInfo();
 }
 
 function startGame() {
@@ -108,9 +111,6 @@ function updateGameArea() {
               return response.json();
             })
             .then(function(json) {
-                if(json.message === 'Success') {
-                    console.log("DONE STORY");
-                }
             }); 
 
             document.getElementById("myfilter").style.display = "block";
@@ -191,32 +191,31 @@ function clearmove(e) {
     myGamePiece.speedY = 0; 
 }
 
-function displayUserInfo() {
-  var username = "";
-  var highscore = "";
-
+function fetchUserInfo() {
   fetch("http://localhost:8080/displayUserInfo")
-  .then(function(response) {
-    return response.json();
-  })
-  .then(function(result) {
-    console.log(result);
-    username = result.username;
-    highscore = result.highscore;
-  })
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      username = data.username;
+      highscore = data.highscore;
+      
+      if (data.message === "Blocked") { 
+        alert("You have exhausted your playes. Please come back tomorrow");
+        startFlag = false ;
+      }
+      else { 
+        displayUserInfo();
+        startGame();
+      }
+    });
+}
 
+function displayUserInfo() {
   var para = document.createElement("P");
 
   document.getElementById("username").innerHTML = username;
   document.getElementById("highscore").innerHTML = highscore;
+}
 
-  // var userPara = para.innerHTML = username;
-  // var usernameDiv = document.getElementById("username");
-  // document.getElementById("username").appendChild(para.innerHTML = username);
-
-  // var scorePara = para.innerHTML = highscore;
-  // var highscoreDiv = document.getElementById("highscore");
-  // document.getElementById("highscore").appendChild(para.innerHTML = highscore);
- }
-
-startGame();
+fetchUserInfo();

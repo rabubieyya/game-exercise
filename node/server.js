@@ -90,8 +90,6 @@ app.post('/scoreInformation', function(req, res) {
   MongoClient.connect(url, {useUnifiedTopology: true}, async function (err, client) {
     var db = client.db('loginData');
 
-    console.log("UserName for this session is " + req.session.username);
-
     var query = {name: req.session.username};
     var highScoreJob = () => { 
       return new Promise((resolve, reject) => {
@@ -180,11 +178,10 @@ app.post('/scoreInformation', function(req, res) {
 });
 
 app.get('/displayUserInfo',function(req, res){ 
-  var username = req.session.username;
-  dataToSend = {};
-  highscore = 0;
+  var dataToSend = {"username": req.session.username, "highscore": 0, "message": "Allowed"};
+  var scoreLength = 0;
   var currentDate = new Date().toISOString().split('T')[0];
-  var query = {name: req.session.username, 'games.date': currentDate};
+  var query = {name: req.session.username};
   MongoClient.connect(url, {useUnifiedTopology: true}, async function (err, client) {
     var db = client.db('loginData');
 
@@ -192,16 +189,26 @@ app.get('/displayUserInfo',function(req, res){
       return new Promise((resolve, reject) => {
         db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
           if (findErr) reject(findErr);
-          highscore = result[0].highscore;
-          // var scoreLength = result[0].games[0].scores.length;
-          dataToSend = { "username": username, "highscore": highscore, "scoreLength": scoreLength };
-          console.log("dataToSend inside is "+JSON.stringify(dataToSend));  
+          dataToSend.highscore = result[0].highscore;
+
+          result[0].games.forEach(game => {
+            if (game.date === currentDate) {
+              scoreLength = game.scores.length
+              resolve(1);
+            }
+          });
+          resolve(0);
         });
       });
     };
 
     var infoRes = await displayInfoJob();
     client.close();
+
+    if (scoreLength === 10) {
+      dataToSend.message = "Blocked";
+    }
+
     res.json(dataToSend);
   });
 })
