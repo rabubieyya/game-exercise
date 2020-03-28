@@ -192,21 +192,20 @@ function clearmove(e) {
 }
 
 function displayUserInfo() {
+  var username = "";
+  var highscore = "";
+
   fetch("http://localhost:8080/displayUserInfo")
   .then(function(response) {
     return response.json();
   })
   .then(function(result) {
     console.log(response.json());
-    var username = result.username;
-    var highscore = result.highscore;
+    username = result.username;
+    highscore = result.highscore;
   })
-  // .then(result => console.log(result))
-  // document.write("Hello World!");
 
   var para = document.createElement("P");
-  var usernameDiv = document.getElementById("username");
-  var highscoreDiv = document.getElementById("highscore");
 
   var userPara = para.innerHTML(username);
   var usernameDiv = document.getElementById("username");
