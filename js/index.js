@@ -207,13 +207,13 @@ function displayUserInfo() {
 
   var para = document.createElement("P");
 
-  var userPara = para.innerHTML(username);
-  var usernameDiv = document.getElementById("username");
-  usernameDiv.appendChild(userPara);
+  // var userPara = para.innerHTML = username;
+  // var usernameDiv = document.getElementById("username");
+  document.getElementById("username").appendChild(para.innerHTML = username);
 
-  var scorePara = para.innerHTML(highscore);
-  var highscoreDiv = document.getElementById("highscore");
-  highscoreDiv.appendChild(scorePara);
+  // var scorePara = para.innerHTML = highscore;
+  // var highscoreDiv = document.getElementById("highscore");
+  document.getElementById("highscore").appendChild(para.innerHTML = highscore);
  }
 
 startGame();
