@@ -182,6 +182,7 @@ app.post('/scoreInformation', function(req, res) {
 app.get('/displayUserInfo',function(req, res){ 
   var username = req.session.username;
   dataToSend = {};
+  highscore = 0;
   var currentDate = new Date().toISOString().split('T')[0];
   var query = {name: req.session.username, 'games.date': currentDate};
   MongoClient.connect(url, {useUnifiedTopology: true}, async function (err, client) {
@@ -191,25 +192,16 @@ app.get('/displayUserInfo',function(req, res){
       return new Promise((resolve, reject) => {
         db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
           if (findErr) reject(findErr);
-          var highscore = result[0].highscore;
-          var scoreLength = result[0].games[0].scores.length;
+          highscore = result[0].highscore;
+          // var scoreLength = result[0].games[0].scores.length;
           dataToSend = { "username": username, "highscore": highscore, "scoreLength": scoreLength };
-          resolve(1);        
+          console.log("dataToSend inside is "+JSON.stringify(dataToSend));  
         });
       });
     };
 
     var infoRes = await displayInfoJob();
     client.close();
-
-    // db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
-    //   if (findErr) reject(findErr);
-    //   var highscore = result[0].highscore;
-    //   var scoreLength = result[0].games[0].scores.length;
-    //   dataToSend = { "username": username, "highscore": highscore, "scoreLength": scoreLength }
-    //   client.close();
-    // });
+    res.json(dataToSend);
   });
-  console.log("dataToSend is "+JSON.stringify(dataToSend));
-  res.json(dataToSend);
 })
