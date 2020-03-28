@@ -140,29 +140,6 @@ function updateGameArea() {
         }
         myscore.text="SCORE: " + myscore.score;  
         myscore.update();
-        // var scoreInfo = JSON.stringify(myscore.score); 
-
-        //   fetch("http://localhost:8080/scoreInformation", { 
-          
-        //   // Adding method type 
-        //   method: "POST", 
-          
-        //   // Adding body or contents to send s
-        //   body: scoreInfo, 
-          
-        //   // Adding headers to the request 
-        //   headers: { 
-        //       "Content-type": "application/json; charset=UTF-8"
-        //   } 
-        //   }) 
-        //   .then(function(response) {
-        //     return response.json();
-        //   })
-        //   .then(function(json) {
-        //       if(json.message === 'Success') {
-        //           console.log("DONE");
-        //       }
-        //   }); 
         myGamePiece.x += myGamePiece.speedX;
         myGamePiece.y += myGamePiece.speedY;    
         myGamePiece.update();
@@ -213,5 +190,31 @@ function clearmove(e) {
     myGamePiece.speedX = 0; 
     myGamePiece.speedY = 0; 
 }
+
+function displayUserInfo() {
+  fetch("http://localhost:8080/displayUserInfo")
+  .then(function(response) {
+    return response.json();
+  })
+  .then(function(result) {
+    console.log(response.json());
+    var username = result.username;
+    var highscore = result.highscore;
+  })
+  // .then(result => console.log(result))
+  // document.write("Hello World!");
+
+  var para = document.createElement("P");
+  var usernameDiv = document.getElementById("username");
+  var highscoreDiv = document.getElementById("highscore");
+
+  var userPara = para.innerHTML(username);
+  var usernameDiv = document.getElementById("username");
+  usernameDiv.appendChild(userPara);
+
+  var scorePara = para.innerHTML(highscore);
+  var highscoreDiv = document.getElementById("highscore");
+  highscoreDiv.appendChild(scorePara);
+ }
 
 startGame();

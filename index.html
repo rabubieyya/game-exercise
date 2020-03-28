@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <title>Game Exercise</title>
   </head>
-  <body onkeydown="checkKey()" onkeyup="clearmove()">
+  <body onload="displayUserInfo()" onkeydown="checkKey()" onkeyup="clearmove()">
+    <div id="username"
+      style="position:absolute;background-color:white;"></div>
+    <div id="highscore"
+      style="position:absolute;background-color:white;"></div>
     <p>Click the buttons to move the red square:</p>
     <div id="myfilter"
       style="position:absolute;background-color:#000000;opacity:0.3;width:322px;height:182px;display:none"></div>

@@ -59,7 +59,7 @@ app.post('/loginInformation', function(req, res){
   console.log("--------------------Signing In------------------------------");
   MongoClient.connect(url, {useUnifiedTopology: true}, function (err, client) {
     var db = client.db('loginData');
-    var query = {name: req.body.username, password: req.body.password};
+    var query = {name: req.body.username};
 
     req.session.username = req.body.username;
     req.session.save();
@@ -69,12 +69,12 @@ app.post('/loginInformation', function(req, res){
     db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
       if (findErr) throw findErr;
 
-      if (result.length==0) {
-        console.log("Invalid Credentials");
-        res.send({message: 'Fail'});
+      if (result.length > 0 && result[0].password === req.body.password) {
+        console.log("Validation Successfull");
       } 
       else {
-        console.log("Validation Successfull");
+        console.log("Invalid Credentials");
+        res.send({message: 'Fail'});
       }
       client.close();
     });
@@ -89,11 +89,11 @@ app.post('/scoreInformation', function(req, res) {
   var gameScore = req.body.score;
   MongoClient.connect(url, {useUnifiedTopology: true}, async function (err, client) {
     var db = client.db('loginData');
-    var query = {name: req.session.username};
 
     console.log("UserName for this session is " + req.session.username);
 
-    var databaseJob = () => { 
+    var query = {name: req.session.username};
+    var highScoreJob = () => { 
       return new Promise((resolve, reject) => {
         db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
           if (findErr) reject(findErr);
@@ -102,53 +102,96 @@ app.post('/scoreInformation', function(req, res) {
             db.collection('loginRecords').updateOne(query, newHighScore, function(err, res) {
               if (err) reject(err);
               console.log("HighScore Updated!");
-              resolve(res);
+              resolve(1);
             });
           }
-
+          else { 
+            resolve(0); 
+          }
         });
       });
     };
 
-    
     var dateJob = () => { 
       console.log("--------------------Checking Date------------------------------");
       return new Promise((resolve, reject) => {
-        var currentDate = (new Date()).toISOString().split('T')[0];
-        db.collection('loginRecords').find( query, { 'games.date': currentDate } ).toArray(function(findErr, result) { 
-          if (findErr) reject(findErr);
-          if(result[0].games[0].date) {
-            console.log("date is already there, now check length of array");
-          }
-          var scoresLength = result[0].games[0].scores.length;
-          var scoreToAppend = { $push: {  result[0].games[0].scores: gameScore } }
-          if(scoresLength<10) {
-            db.collection('loginRecords').updateOne(query, scoreToAppend, function(err, res) {
-              if (err) reject(err);
-              console.log("Scores Updated!");
-              resolve(res);
-            });
-          }
+        var currentDate = new Date().toISOString().split('T')[0];
+        var queryNew = {name: req.session.username, 'games.date': currentDate}
 
-          // if (gameScore > result[0].highscore ) {
-          //   var newHighScore = { $set: {highscore: gameScore} };
-          //   db.collection('loginRecords').updateOne(query, newHighScore, function(err, res) {
-          //     if (err) reject(err);
-          //     console.log("HighScore Updated!");
-          //     resolve(res);
-          //   });
-          // }
+        db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
+          if (findErr) reject(findErr);
+
+          let counter = 0;
+          let foundFlag = false;
+          result[0].games.forEach(game => {
+            if (game.date === currentDate) {
+              console.log("Existing Record Found");
+              foundFlag = true;
+
+              if (game.scores.length < 10) {
+                var queryAppendScore = { 
+                  $push: { 
+                    'games.$.scores': { 
+                      $each: [gameScore]
+                    }
+                  }
+                };
+                db.collection('loginRecords').updateOne(queryNew, queryAppendScore, function(err, res) {
+                  if (err) reject(err);
+                  console.log("Scores Updated!");
+                  resolve(1);
+                });
+              }
+              else {
+                console.log("Plays exceeded!!");
+                resolve(0);              
+              }
+            }
+            counter = counter + 1;
+          });
+
+          if (foundFlag === false) {
+            var queryAddNewDate = {
+              $push: {
+                games: {
+                  date: currentDate,
+                  scores: [gameScore]
+                }
+              }
+            };
+            db.collection('loginRecords').updateOne(query, queryAddNewDate, function(err, res) {
+              if (err) reject(err);
+              console.log("New Date Entry Added!!");
+              resolve(1);
+            });
+          }      
         });
       });
     };
 
-    var result = await databaseJob();
-    console.log(result);
-    var dateRes = await dateJob();
-    console.log("--------------------");
-    console.log(dateRes);
-    client.close();
-  }); 
+    app.get('/displayUserInfo',function(req, res){ 
+      var username = req.session.username;
+      var dataToSend = {};
+      var currentDate = new Date().toISOString().split('T')[0];
+      var query = {name: req.session.username, 'games.date': currentDate};
+      MongoClient.connect(url, {useUnifiedTopology: true}, function (err, client) {
+        var db = client.db('loginData');
+        db.collection('loginRecords').find(query).toArray(function(findErr, result) { 
+          if (findErr) reject(findErr);
+          var highscore = result[0].highscore;
+          var scoreLength = result[0].games[0].scores.length;
+          dataToSend = { "username": username, "highscore": highscore, "scoreLength": scoreLength }
+          client.close();
+        });
+      });
+      res.json(dataToSend);
+    })
 
-  res.json({ message: 'Success' });
+    var scoreRes = await highScoreJob();
+    var dateRes = await dateJob();
+    client.close();
+
+    if (dateRes === 1) { res.json({ message: 'Updated' }); }
+    else { res.json({ message: 'Failed' }); }
+  }); 
 });
